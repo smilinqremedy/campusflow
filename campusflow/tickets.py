@@ -189,3 +189,61 @@ def get_ticket_by_id(tickets: list[dict], ticket_id: str) -> Optional[dict]:
         if t.get("id", "").upper() == target:
             return t
     return None
+
+
+def is_valid_ticket_id(ticket_id: str) -> bool:
+    """Check if a string is a valid ticket ID format (e.g. 'T001', 'T100').
+
+    Args:
+        ticket_id: String to validate.
+
+    Returns:
+        True if formatted as 'T' followed by 3 or more digits, else False.
+    """
+    if not isinstance(ticket_id, str):
+        return False
+    clean = ticket_id.strip().upper()
+    return clean.startswith("T") and clean[1:].isdigit() and len(clean[1:]) >= 3
+
+
+def format_ticket_summary(ticket: dict) -> str:
+    """Format a ticket dictionary into a concise one-line summary string.
+
+    Args:
+        ticket: Ticket dictionary.
+
+    Returns:
+        Single-line formatted summary.
+    """
+    tid = ticket.get("id", "N/A")
+    title = ticket.get("title", "Untitled")
+    category = ticket.get("category", "General")
+    priority = ticket.get("priority", "N/A").upper()
+    status = ticket.get("status", "open")
+    assigned = ticket.get("assigned_to") or "Unassigned"
+    return f"[{tid}] {title:<30} | {category:<10} | {priority:<8} | {status:<11} | Assigned: {assigned}"
+
+
+def format_ticket_details(ticket: dict) -> str:
+    """Format full ticket details into a human-readable multi-line block.
+
+    Args:
+        ticket: Ticket dictionary.
+
+    Returns:
+        Multi-line formatted string.
+    """
+    lines = [
+        "=" * 50,
+        f"Ticket ID:       {ticket.get('id', 'N/A')}",
+        f"Title:           {ticket.get('title', 'N/A')}",
+        f"Category:        {ticket.get('category', 'N/A')}",
+        f"Urgency:         {ticket.get('urgency', 'N/A')}",
+        f"Affected Users:  {ticket.get('affected_users', 'N/A')}",
+        f"Priority:        {str(ticket.get('priority', 'N/A')).upper()}",
+        f"Status:          {ticket.get('status', 'N/A')}",
+        f"Assigned To:     {ticket.get('assigned_to') or 'Unassigned'}",
+        "=" * 50,
+    ]
+    return "\n".join(lines)
+
