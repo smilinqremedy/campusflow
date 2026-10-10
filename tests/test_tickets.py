@@ -9,10 +9,14 @@ from campusflow.tickets import (
     ALLOWED_URGENCIES,
     calculate_priority,
     create_ticket,
+    format_ticket_details,
+    format_ticket_summary,
     generate_ticket_id,
     get_ticket_by_id,
+    is_valid_ticket_id,
     validate_ticket_inputs,
 )
+
 
 
 class TestTicketValidation(unittest.TestCase):
@@ -161,5 +165,52 @@ class TestTicketCreationAndLookup(unittest.TestCase):
         self.assertIsNone(get_ticket_by_id(tickets, "T999"))
 
 
+class TestTicketFormattingAndHelpers(unittest.TestCase):
+    """Test suite for ticket display formatting and ID validation helpers."""
+
+    def test_is_valid_ticket_id(self):
+        self.assertTrue(is_valid_ticket_id("T001"))
+        self.assertTrue(is_valid_ticket_id("t045"))
+        self.assertTrue(is_valid_ticket_id("  T9999  "))
+        self.assertFalse(is_valid_ticket_id("T01"))      # fewer than 3 digits
+        self.assertFalse(is_valid_ticket_id("001"))      # missing prefix
+        self.assertFalse(is_valid_ticket_id("TX01"))     # non-numeric
+        self.assertFalse(is_valid_ticket_id(123))        # non-string
+
+    def test_format_ticket_summary(self):
+        ticket = {
+            "id": "T001",
+            "title": "Wi-Fi is down",
+            "category": "Network",
+            "priority": "critical",
+            "status": "open",
+            "assigned_to": None,
+        }
+        summary = format_ticket_summary(ticket)
+        self.assertIn("[T001]", summary)
+        self.assertIn("Wi-Fi is down", summary)
+        self.assertIn("CRITICAL", summary)
+        self.assertIn("Unassigned", summary)
+
+    def test_format_ticket_details(self):
+        ticket = {
+            "id": "T002",
+            "title": "Broken screen",
+            "category": "Hardware",
+            "urgency": "high",
+            "affected_users": 1,
+            "priority": "high",
+            "status": "in_progress",
+            "assigned_to": "Fredrick",
+        }
+        details = format_ticket_details(ticket)
+        self.assertIn("Ticket ID:       T002", details)
+        self.assertIn("Category:        Hardware", details)
+        self.assertIn("Priority:        HIGH", details)
+        self.assertIn("Status:          in_progress", details)
+        self.assertIn("Assigned To:     Fredrick", details)
+
+
 if __name__ == "__main__":
     unittest.main()
+
