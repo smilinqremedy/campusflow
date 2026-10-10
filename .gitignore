@@ -1,0 +1,23 @@
+# Python byte-code / caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Environment files
+.env
+
+# Runtime data (Section 2.3 & Phase 1 requirement)
+data/tickets.json
+data/
+*.json.bak
+
+# IDE & OS files
+.DS_Store
+.vscode/
+.idea/
