@@ -32,14 +32,6 @@ def work_queue(tickets: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
     return sorted(unresolved, key=sort_key)
 
-    def sort_key(ticket: dict[str, Any]) -> tuple[int, int, str]:
-        priority_rank = _PRIORITY_RANK.get(ticket.get("priority"), len(PRIORITIES))
-        ticket_id = ticket.get("id", "")
-        suffix = ticket_id[1:] if isinstance(ticket_id, str) and ticket_id.startswith("T") else ""
-        numeric_id = int(suffix) if suffix.isdigit() else 10**12
-        return priority_rank, numeric_id, str(ticket_id)
-
-    return sorted(unresolved, key=sort_key)
 
 
 def build_report(tickets: list[dict[str, Any]]) -> dict[str, Any]:
