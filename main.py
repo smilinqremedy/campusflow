@@ -161,7 +161,9 @@ def handle_work_queue(tickets: list[dict]) -> None:
     print(f"Unresolved tickets in queue: {len(queue)}\n")
     for rank, t in enumerate(queue, start=1):
         assigned = t.get("assigned_to") or "Unassigned"
-        print(f"{rank:2d}. [{t['id']}] {t['priority'].upper():<8} | {t['status']:<11} | Users: {t['affected_users']:<3} | {t['title']:<25} | Staff: {assigned}")
+        print(f"{rank:2d}. [{t['id']}] {t['priority'].upper():<8} | {t['status']:<11} | Users: {t['affected_users']:<3} | {t['title']} | Staff: {assigned}")
+
+
 
 
 def handle_reports(tickets: list[dict]) -> None:

@@ -221,7 +221,8 @@ def format_ticket_summary(ticket: dict) -> str:
     priority = ticket.get("priority", "N/A").upper()
     status = ticket.get("status", "open")
     assigned = ticket.get("assigned_to") or "Unassigned"
-    return f"[{tid}] {title:<30} | {category:<10} | {priority:<8} | {status:<11} | Assigned: {assigned}"
+    return f"[{tid}] {title} | {category} | {priority} | {status} | Assigned: {assigned}"
+
 
 
 def format_ticket_details(ticket: dict) -> str:
