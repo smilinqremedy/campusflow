@@ -12,7 +12,7 @@ CampusFlow is a robust, modular Python command-line ticket management system bui
 | Fellow | Role | Primary Responsibilities | Feature Branch |
 | :--- | :--- | :--- | :--- |
 | **Oche Gabriel Adanu** ([@Aocheg](https://github.com/Aocheg)) | **Engineer A** | • F1: Ticket Creation & Input Validation<br>• F1.3: Priority Calculation Engine<br>• Unit tests in `tests/test_tickets.py`<br>• AI Learning Log entries (Engineer A)<br>• Pull Request review on Engineer B's work | `feat/1-ticket-creation` |
-| **Ocheche Fredrick** ([@smilinqremedy](https://github.com/smilinqremedy)) | **Engineer B** | • F3: Ticket Assignment<br>• F4: Status Workflow (`open` → `in_progress` → `resolved`)<br>• F5: Priority Work Queue<br>• F6: Summary & Category Reporting<br>• Unit tests in `tests/test_workflow.py`<br>• AI Learning Log entries (Engineer B)<br>• Pull Request review on Engineer A's work | `feat/2-workflow-and-reports` |
+| **Ocheche Fredrick** ([@smilinqremedy](https://github.com/smilinqremedy)) | **Engineer B** | • F3: Ticket Assignment<br>• F4: Status Workflow (`open` → `in_progress` → `resolved`)<br>• F5: Priority Work Queue<br>• F6: Summary & Category Reporting<br>• Unit tests in `tests/test_workflow.py`<br>• AI Learning Log entries (Engineer B)<br>• Pull Request review on Engineer A's work | `feat/3-6-assignment-workflow-reports` |
 | **Both Fellows** | **Collaboration** | • Architectural contract (`docs/design-decisions.md`)<br>• F7: JSON Persistence & reload safety (`campusflow/storage.py`)<br>• CLI interaction layer (`main.py`)<br>• Full regression test verification on `main` | `main` |
 
 ---
@@ -52,10 +52,11 @@ python3 main.py
 
 ## 🧪 Running Automated Tests
 
-Run the full automated test suite using Python's standard `unittest` discovery:
+Run the full automated test suite (33 tests) using Python's standard `unittest` discovery:
 ```bash
 python3 -m unittest discover -s tests -v
 ```
+
 
 ### Test Coverage Highlights
 - **Ticket Validation**: Non-blank titles, allowed categories (`Network`, `Hardware`, `Software`, `Other`), allowed urgencies (`low`, `medium`, `high`), positive non-zero integers for `affected_users`.
