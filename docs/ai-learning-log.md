@@ -74,16 +74,71 @@
 
 ## Fellow: Ocheche Fredrick (Engineer B)
 
-*(To be recorded by Engineer B during Phase 3 & 4 development on branch `feat/2-workflow-and-reports`)*
+### Interaction #1 — Multi-Criteria Queue Sorting and Tie-Breaking in Python
+- **Problem**: I needed to sort open tickets first by custom priority ranking (`critical` > `high` > `medium` > `low`), and then break ties between tickets of the same priority by their numeric ticket ID (`T001` before `T002`).
+- **My initial understanding**: I considered running multiple sorting passes with `list.sort()`.
+- **Prompt to AI**: "How does Python's `sorted()` function handle multiple sort criteria with custom ranking and numerical tie-breaking?"
+- **Useful AI guidance**: The AI explained that returning a tuple from the key function (`key=lambda x: (criterion_1, criterion_2)`) evaluates criteria in lexicographical order: Python sorts by the first tuple element, and only if there is a tie does it compare the second element.
+- **My independent experiment/test**:
+  ```python
+  tickets = [
+      {"id": "T002", "priority": "high"},
+      {"id": "T001", "priority": "high"},
+      {"id": "T003", "priority": "critical"},
+  ]
+  _PRIORITY_RANK = {"critical": 0, "high": 1, "medium": 2, "low": 3}
+  sorted_tickets = sorted(
+      tickets,
+      key=lambda t: (_PRIORITY_RANK[t["priority"]], int(t["id"][1:]))
+  )
+  print([t["id"] for t in sorted_tickets])  # Output: ['T003', 'T001', 'T002']
+  ```
+- **Verification source or result**: Verified that `T003` (critical) sorts first, followed by `T001` (high, ID 1), then `T002` (high, ID 2).
+- **Decision**: Implemented `sort_key(ticket: dict) -> tuple[int, int, str]` in `campusflow.reports.work_queue`.
+- **Related file/commit**: `campusflow/reports.py` (`work_queue`), `tests/test_workflow.py` (`test_queue_priority_then_numeric_id`).
+- **What I can now explain without AI**: Tuple comparison in Python natively solves multi-level sorting. By mapping categorical strings to numeric ranks in the first tuple position and ticket IDs in the second, ties are broken automatically without secondary passes.
 
-### Interaction #1 — Ticket Assignment and Validation
-- **Problem**: Restricting ticket status transitions so unassigned tickets cannot enter `in_progress`.
-- *Status: In progress by Engineer B.*
+---
 
-### Interaction #2 — Priority Queue Sorting with Tie-breaking
-- **Problem**: Sorting open tickets by custom priority order (`critical` > `high` > `medium` > `low`) and breaking ties by numeric ID.
-- *Status: In progress by Engineer B.*
+### Interaction #2 — Workflow Lifecycle State Guards & Reopening Rules
+- **Problem**: Enforcing that an unassigned ticket cannot move to `in_progress`, and that a `resolved` ticket cannot be mutated without an explicit reopen operation.
+- **My initial understanding**: I initially considered a simple dictionary mapping allowed `(current_status, new_status)` pairs.
+- **Prompt to AI**: "What is the cleanest way to validate state machine transitions with business guards in Python?"
+- **Useful AI guidance**: The AI showed that while a transition table works for simple state changes, guard conditions that depend on ticket attributes (like verifying `ticket.get("assigned_to")` is non-empty before entering `in_progress`) require explicit guard checks before committing the status change.
+- **My independent experiment/test**:
+  Tested attempting to progress an unassigned ticket:
+  ```python
+  ticket = {"id": "T001", "status": "open", "assigned_to": None}
+  # Attempt invalid transition
+  if not ticket.get("assigned_to"):
+      raise ValueError("Assign the ticket to a staff member before starting work.")
+  ```
+- **Verification source or result**: Automated tests in `tests/test_workflow.py` (`test_unassigned_ticket_cannot_start`) verified that `ValueError` is raised and status remains `"open"`.
+- **Decision**: Implemented procedural guard validation in `campusflow.workflow.change_status`.
+- **Related file/commit**: `campusflow/workflow.py` (`change_status`), `tests/test_workflow.py`.
+- **What I can now explain without AI**: State transitions with attribute preconditions (guards) are best validated explicitly before mutating object state, ensuring invalid transitions fail fast without leaving tickets in an inconsistent or partially updated state.
 
-### Interaction #3 — Reopening Resolved Tickets and Lifecycle Rules
-- **Problem**: Enforcing that resolved tickets cannot be edited without an explicit reopen operation.
-- *Status: In progress by Engineer B.*
+---
+
+### Interaction #3 — Safe Dictionary Aggregation and Zero-Count Handling [CRITICAL EVALUATION / REJECTED AI SUGGESTION]
+- **Problem**: Generating aggregate summary reports by status and priority, including when the ticket collection is empty (0 tickets).
+- **My initial understanding**: I needed total tickets and counts broken down by status and priority.
+- **Prompt to AI**: "Write a Python function to aggregate ticket counts by status and priority using `collections.Counter`."
+- **Useful AI guidance**: The AI suggested using `collections.Counter(t['status'] for t in tickets)` and `collections.Counter(t['priority'] for t in tickets)`.
+- **My independent experiment/test**:
+  When tested against an empty ticket list (`tickets = []`) or a list with only 1 category present:
+  ```python
+  from collections import Counter
+  c = Counter([t.get("status") for t in []])
+  print(dict(c))  # Output: {}
+  ```
+  The naive suggestion returned an empty dictionary `{}`. In the CLI and reporting requirements, missing statuses or priorities (such as `0` resolved tickets or `0` critical tickets) would be completely omitted from the report output instead of displaying `open: 0`, `in_progress: 0`, `resolved: 0`.
+- **Verification source or result**: Verified that requirement F6 requires displaying counts even when a status has 0 tickets.
+- **Decision**: **IMPROVED/REJECTED the Counter suggestion**. Instead of returning a sparse dictionary from `Counter`, I pre-initialized all allowed statuses and priorities with default zero counts:
+  ```python
+  statuses = {"open": 0, "in_progress": 0, "resolved": 0}
+  priorities = {priority: 0 for priority in PRIORITIES}
+  ```
+- **Related file/commit**: `campusflow/reports.py` (`build_report`), `tests/test_workflow.py` (`test_empty_report`).
+- **What I can now explain without AI**: Using sparse counters (`collections.Counter`) misses zero-count categories when items are absent. Pre-initializing known categorical keys guarantees consistent reporting schema even for edge cases like empty collections.
+
